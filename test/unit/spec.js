@@ -35,17 +35,6 @@ describe('Universal tests', () => {
 describe('REQUEST', () => {
   const REQUEST = axiosActionCreators.REQUEST
 
-  test('Action is output when called twice', () => {
-    const expected = { type: ACTION_TYPE_FOO }
-    expect(REQUEST(ACTION_TYPE_FOO)()).toEqual(expected)
-  })
-
-  test('Action contains meta when given', () => {
-    const meta = { foo: 'bar' }
-    const expected = { type: ACTION_TYPE_FOO, meta }
-    expect(REQUEST(ACTION_TYPE_FOO)({ meta })).toEqual(expected)
-  })
-
   test('TypeError is thrown when config is not an object', () => {
     function callWithoutObject () {
       REQUEST(ACTION_TYPE_FOO)(6)
@@ -59,6 +48,17 @@ describe('REQUEST', () => {
     }
     expect(callWithoutObject).toThrowError(TypeError)
   })
+
+  test('Action is output when called twice', () => {
+    const expected = { type: ACTION_TYPE_FOO }
+    expect(REQUEST(ACTION_TYPE_FOO)()).toEqual(expected)
+  })
+
+  test('Action contains meta when given', () => {
+    const meta = { foo: 'bar' }
+    const expected = { type: ACTION_TYPE_FOO, meta }
+    expect(REQUEST(ACTION_TYPE_FOO)({ meta })).toEqual(expected)
+  })
 })
 
 describe('SUCCESS', () => {
@@ -67,35 +67,6 @@ describe('SUCCESS', () => {
     { id: 5, name: 'foo' },
     { id: 8, name: 'bar' }
   ]
-
-  test('Action is output when called twice', () => {
-    const expected = { type: ACTION_TYPE_FOO }
-    expect(SUCCESS(ACTION_TYPE_FOO)()).toEqual(expected)
-  })
-
-  test('Action returns response data', () => {
-    const response = { data: [{ id: 5 }], status: 200, headers: {} }
-    const expected = {
-      type: ACTION_TYPE_FOO,
-      response
-    }
-    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
-  })
-
-  test('Action contains no data key when data not present', () => {
-    const response = { status: 204, headers: {} }
-    const expected = { type: ACTION_TYPE_FOO, response }
-    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
-  })
-
-  test('Action payload contains normalized response when schema given', () => {
-    const schema = [ user ]
-    const normalized = normalizr.normalize(data, schema)
-    console.log(normalized)
-    const response = { data, status: 200, headers: {} }
-    const expected = { type: ACTION_TYPE_FOO, payload: normalized, response }
-    expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
-  })
 
   test('TypeError thrown when payload is not an object', () => {
     function callWithoutPayloadObject () {
@@ -125,11 +96,59 @@ describe('SUCCESS', () => {
     expect(callWithInvalidSchema).toThrowError(TypeError)
   })
 
+  test('Action is output when called twice', () => {
+    const expected = { type: ACTION_TYPE_FOO }
+    expect(SUCCESS(ACTION_TYPE_FOO)()).toEqual(expected)
+  })
+
+  test('Action returns response data', () => {
+    const response = { data, status: 200, headers: {} }
+    const expected = {
+      type: ACTION_TYPE_FOO,
+      payload: data,
+      meta: { response }
+    }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
+  })
+
+  test('Action contains no data key when data not present', () => {
+    const response = { status: 204, headers: {} }
+    const expected = { type: ACTION_TYPE_FOO, meta: { response } }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
+  })
+
+  test('Action contains no meta when neither response or meta given', () => {
+    expect(SUCCESS(ACTION_TYPE_FOO)()).not.toHaveProperty('meta')
+  })
+
+  test('Action contains meta when either response or meta given', () => {
+    const response = { status: 204, headers: {} }
+    const meta = { foo: 'bar' }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toHaveProperty('meta', { response })
+    expect(SUCCESS(ACTION_TYPE_FOO)(null, { meta })).toHaveProperty('meta', meta)
+    expect(SUCCESS(ACTION_TYPE_FOO)(response, { meta }))
+      .toHaveProperty('meta', Object.assign({ response }, meta))
+  })
+
+  test('Action payload contains normalized response when schema given', () => {
+    const schema = [ user ]
+    const normalized = normalizr.normalize(data, schema)
+    const response = { data, status: 200, headers: {} }
+    const expected = { type: ACTION_TYPE_FOO, payload: normalized, meta: { response } }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
+  })
+
+  test('Action payload contains raw data when no schema given', () => {
+    const response = { data, status: 200, headers: {} }
+    const expected = { type: ACTION_TYPE_FOO, payload: data, meta: { response } }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
+  })
+
   test('Action payload contains normalized response when valid but nonsensical schema given', () => {
     const schema = {}
     const normalized = normalizr.normalize(data, schema)
     const response = { data, status: 200, headers: {} }
-    const expected = { type: ACTION_TYPE_FOO, payload: normalized, response }
+    const expected = { type: ACTION_TYPE_FOO, payload: normalized, meta: { response } }
     expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
   })
 })
@@ -137,27 +156,9 @@ describe('SUCCESS', () => {
 describe('FAILURE', () => {
   const FAILURE = axiosActionCreators.FAILURE
 
-  test('Action contains error property', () => {
-    expect(FAILURE(ACTION_TYPE_FOO)()).toHaveProperty('error', true)
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error())).toHaveProperty('error', true)
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { foo: 'bar' })).toHaveProperty('error', true)
-  })
-
-  test('Action always contains payload property', () => {
-    expect(FAILURE(ACTION_TYPE_FOO)()).toHaveProperty('payload')
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error())).toHaveProperty('payload')
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { foo: 'bar' })).toHaveProperty('payload')
-  })
-
-  test('Action payload is always an Error object', () => {
-    expect(FAILURE(ACTION_TYPE_FOO)().payload).toBeInstanceOf(Error)
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error()).payload).toBeInstanceOf(Error)
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta: { a: 5 } }).payload).toBeInstanceOf(Error)
-  })
-
   test('TypeError thrown when config is not an object', () => {
     function callWithInvalidConfig () {
-      FAILURE(ACTION_TYPE_FOO)(false)
+      FAILURE(ACTION_TYPE_FOO)(null, false)
     }
     expect(callWithInvalidConfig).toThrowError(TypeError)
   })
@@ -176,9 +177,34 @@ describe('FAILURE', () => {
     expect(callWithInvalidConfig).toThrowError(TypeError)
   })
 
-  test('Action contains meta when given', () => {
+  test('Action contains error property', () => {
+    expect(FAILURE(ACTION_TYPE_FOO)()).toHaveProperty('error', true)
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error())).toHaveProperty('error', true)
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta: {} })).toHaveProperty('error', true)
+  })
+
+  test('Action only contains payload property when error given', () => {
+    expect(FAILURE(ACTION_TYPE_FOO)()).not.toHaveProperty('payload')
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error())).toHaveProperty('payload')
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { foo: 'bar' })).toHaveProperty('payload')
+  })
+
+  test('Action payload is always an Error object', () => {
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error()).payload).toBeInstanceOf(Error)
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta: { a: 5 } }).payload).toBeInstanceOf(Error)
+  })
+
+  test('Action contains no meta when neither error.response or meta given', () => {
+    expect(FAILURE(ACTION_TYPE_FOO)()).not.toHaveProperty('meta')
+  })
+
+  test('Action contains meta when either error.response or meta given', () => {
+    const err = new Error()
+    err.response = { status: 204 }
     const meta = { foo: 'bar' }
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta })).toHaveProperty('meta', meta)
+    expect(FAILURE(ACTION_TYPE_FOO)(err)).toHaveProperty('meta', { response: err.response })
+    expect(FAILURE(ACTION_TYPE_FOO)(err, { meta }))
+      .toHaveProperty('meta', Object.assign({ response: err.response }, meta))
   })
 
   test('Action contains error in payload when response is an error', () => {
@@ -187,18 +213,6 @@ describe('FAILURE', () => {
       type: ACTION_TYPE_FOO,
       error: true,
       payload: err
-    }
-    expect(FAILURE(ACTION_TYPE_FOO)(err)).toEqual(expected)
-  })
-
-  test('Action contains response data when error has response property', () => {
-    const err = new Error('Request failed with status code 404')
-    err.response = { foo: 'bar' }
-    const expected = {
-      type: ACTION_TYPE_FOO,
-      error: true,
-      payload: err,
-      response: err.response
     }
     expect(FAILURE(ACTION_TYPE_FOO)(err)).toEqual(expected)
   })
