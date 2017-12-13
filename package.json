@@ -4,7 +4,7 @@
   "description": "A set of action creators that make it easier to work with axios and redux.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "redux",
@@ -16,6 +16,10 @@
   "author": "Ben Hadfield <benjohnhadfield@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "jest": "^21.2.1",
     "standard": "^10.0.3"
+  },
+  "peerDependencies": {
+    "normalizr": "^3.0.0"
   }
 }
