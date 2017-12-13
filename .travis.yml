@@ -6,6 +6,6 @@ cache:
   directories:
     - node_modules
 before_install:
-  - npm install peerDependency
+  - npm install --save-dev --ignore-scripts install-peers
 script:
   - npm test
