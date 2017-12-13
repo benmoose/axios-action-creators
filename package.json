@@ -3,6 +3,13 @@
   "version": "0.0.1",
   "description": "A set of action creators that make it easier to work with axios and redux.",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/benjaminhadfield/axios-action-creators.git"
+  },
+  "bugs": {
+    "url": "https://github.com/benjaminhadfield/axios-action-creators/issues"
+  },
   "scripts": {
     "test": "jest"
   },
