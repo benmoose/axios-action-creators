@@ -1,5 +1,7 @@
 # Axios Action Creators
 
+[![npm version](https://img.shields.io/npm/v/axios-action-creators.svg?style=flat-square)](https://badge.fury.io/js/axios-action-creators)
+
 **Axios Action Creators** makes it really easy to deal with API responses.
 Simply define the action creators and then call them when you receive the response to get [standardised](https://github.com/acdlite/flux-standard-action) actions.
 
