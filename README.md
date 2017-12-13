@@ -1,51 +1,87 @@
 # Axios Action Creators
 
-**Axios Action Creators** makes it easier to work with api responces using axios.
+**Axios Action Creators** makes it really easy to deal with API responses.
+Simply define the action creators and then call them when you receive the response to get [standardised](https://github.com/acdlite/flux-standard-action) actions.
 
-###### Request action
+## Usage
 
-`REQUEST(actionTypes.GET_USER_REQUEST)` gives a function that resolves to the following when dispatched.
+###### Typical Usage
 
 ```js
-{
-  type: "GET_USER_REQUEST"
+import axios from 'axios'
+import { REQUEST, SUCCESS, FAILURE } from 'axios-action-creators'
+import { user } from './schema'
+
+// (1) Define action types
+export const GET_USERS_REQUEST = 'GET_USERS_REQUEST'
+export const GET_USERS_SUCCESS = 'GET_USERS_SUCCESS'
+export const GET_USERS_FAILURE = 'GET_USERS_FAILURE'
+
+// (2) Define action creators – just pass in the type
+const getUsersRequest = REQUEST(GET_USERS_REQUEST)
+const getUsersSuccess = SUCCESS(GET_USERS_SUCCESS)
+const getUsersFailure = FAILURE(GET_USERS_FAILURE)
+
+// (3) Call the action creators to get the actions
+export const getUsers = () => (dispatch) => {
+  // Resolves to a action with type GET_USERS_REQUEST
+  dispatch(getUsersRequest())
+  return axios.get('/users')
+    // If successful dispatch GET_USERS_SUCCESS action and (optionally) normalise the data
+    .then(res => dispatch(getUsersSuccess(res, { schema: [ user ] })))
+    // If failure dispatch GET_USERS_FAILURE action
+    .catch(err => dispatch(getUsersFailure(err)))
 }
 ```
 
-###### Success action
+All action creators optionally take an object which can be used to change the action.
 
-`SUCCESS(actionTypes.GET_USER_SUCCESS)` gives a function that resolves to the following when dispatched.
+Valid parameters are:
+ - `meta` add arbitrary data to a `meta` property in the action.
+ - `schema` _(only SUCCESS / FAILURE)_ a [normalizr](https://github.com/paularmstrong/normalizr) schema to normalise the response.
+
+For example:
 
 ```js
+import { schema } from 'normalizr'
+const getGistsRequest = SUCCESS('GET_GISTS_REQUEST')
+const getGistsSuccess = SUCCESS('GET_GISTS_SUCCESS')
+
+export const getGists = () => dispatch => {
+  dispatch(getGistsRequest({
+    meta: { requestedAt: Date.now() }
+  }))
+  axios.get('/username/gists')
+    .then(res => dispatch(getGistsSuccess(res, {
+      meta: { responseAt: Date.now() },
+      schema: new schema.Array('gists')
+    })))
+}
+```
+
+The actions would look similar to this
+
+```js
+// getGistsRequest
 {
-  type: "GET_USER_SUCCESS",
-  payload: {
-    id: 5,
-    name: "John Doe"
-  },
+  type: GET_GISTS_REQUEST,
   meta: {
-    status: 200,
-    ...
+    requestedAt: 1513176647405
   }
 }
-```
 
-###### Failure action
-
-`FAILURE(actionTypes.GET_USER_FAILURE)` gives a function that resolves to the following when dispatched.
-
-```js
+// getGistsSuccess
 {
-  type: "GET_USER_FAILURE",
-  error: true,
+  type: GET_GISTS_SUCCESS,
   payload: {
-    message: "Authorization details not provided",
-    status: 403,
-    ...
+    entities: {...},
+    result: [15564, 27377, ...]
   },
   meta: {
-    status: 403,
-    ...
-  }
+    responseAt: 1513176648004
+  },
+  response: {...}
 }
 ```
+
+The original, unmodified response is always available in the `response` key.

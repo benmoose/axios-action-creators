@@ -43,12 +43,19 @@ describe('REQUEST', () => {
   test('Action contains meta when given', () => {
     const meta = { foo: 'bar' }
     const expected = { type: ACTION_TYPE_FOO, meta }
-    expect(REQUEST(ACTION_TYPE_FOO)(meta)).toEqual(expected)
+    expect(REQUEST(ACTION_TYPE_FOO)({ meta })).toEqual(expected)
   })
 
-  test('TypeError is thrown when meta is not an object', () => {
+  test('TypeError is thrown when config is not an object', () => {
     function callWithoutObject () {
       REQUEST(ACTION_TYPE_FOO)(6)
+    }
+    expect(callWithoutObject).toThrowError(TypeError)
+  })
+
+  test('TypeError is thrown when config.meta is not an object', () => {
+    function callWithoutObject () {
+      REQUEST(ACTION_TYPE_FOO)({ meta: 5 })
     }
     expect(callWithoutObject).toThrowError(TypeError)
   })
@@ -81,6 +88,15 @@ describe('SUCCESS', () => {
     expect(SUCCESS(ACTION_TYPE_FOO)(response)).toEqual(expected)
   })
 
+  test('Action payload contains normalized response when schema given', () => {
+    const schema = [ user ]
+    const normalized = normalizr.normalize(data, schema)
+    console.log(normalized)
+    const response = { data, status: 200, headers: {} }
+    const expected = { type: ACTION_TYPE_FOO, payload: normalized, response }
+    expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
+  })
+
   test('TypeError thrown when payload is not an object', () => {
     function callWithoutPayloadObject () {
       SUCCESS(ACTION_TYPE_FOO)(5)
@@ -88,18 +104,23 @@ describe('SUCCESS', () => {
     expect(callWithoutPayloadObject).toThrowError(TypeError)
   })
 
-  test('Action payload contains normalized response when schema given', () => {
-    const schema = [ user ]
-    const normalized = normalizr.normalize(data, schema)
-    const response = { data, status: 200, headers: {} }
-    const expected = { type: ACTION_TYPE_FOO, payload: normalized, response }
-    expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
+  test('TypeError thrown when config is not an object', () => {
+    function callWithInvalidSchema () {
+      SUCCESS(ACTION_TYPE_FOO)({}, 'foo')
+    }
+    expect(callWithInvalidSchema).toThrowError(TypeError)
   })
 
-  test('Error thrown when invalid schema is given', () => {
-    const response = { data, status: 200, headers: {} }
+  test('TypeError thrown when config.meta is not an object', () => {
     function callWithInvalidSchema () {
-      SUCCESS(ACTION_TYPE_FOO)(response, { schema: 10 })
+      SUCCESS(ACTION_TYPE_FOO)({}, { meta: true })
+    }
+    expect(callWithInvalidSchema).toThrowError(TypeError)
+  })
+
+  test('TypeError thrown when config.schema is not an object', () => {
+    function callWithInvalidSchema () {
+      SUCCESS(ACTION_TYPE_FOO)({}, { schema: 10 })
     }
     expect(callWithInvalidSchema).toThrowError(TypeError)
   })
@@ -131,7 +152,28 @@ describe('FAILURE', () => {
   test('Action payload is always an Error object', () => {
     expect(FAILURE(ACTION_TYPE_FOO)().payload).toBeInstanceOf(Error)
     expect(FAILURE(ACTION_TYPE_FOO)(new Error()).payload).toBeInstanceOf(Error)
-    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta: 5 }).payload).toBeInstanceOf(Error)
+    expect(FAILURE(ACTION_TYPE_FOO)(new Error(), { meta: { a: 5 } }).payload).toBeInstanceOf(Error)
+  })
+
+  test('TypeError thrown when config is not an object', () => {
+    function callWithInvalidConfig () {
+      FAILURE(ACTION_TYPE_FOO)(false)
+    }
+    expect(callWithInvalidConfig).toThrowError(TypeError)
+  })
+
+  test('TypeError thrown when config.meta is not an object', () => {
+    function callWithInvalidConfig () {
+      FAILURE(ACTION_TYPE_FOO)({ meta: [] })
+    }
+    expect(callWithInvalidConfig).toThrowError(TypeError)
+  })
+
+  test('TypeError thrown when config.schema is not an object', () => {
+    function callWithInvalidConfig () {
+      FAILURE(ACTION_TYPE_FOO)({ schema: 'entity' })
+    }
+    expect(callWithInvalidConfig).toThrowError(TypeError)
   })
 
   test('Action contains meta when given', () => {
