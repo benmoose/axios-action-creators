@@ -5,7 +5,7 @@ Simply define the action creators and then call them when you receive the respon
 
 ## Usage
 
-###### Typical Usage
+###### Basic Usage
 
 ```js
 import axios from 'axios'
@@ -27,20 +27,20 @@ export const getUsers = () => (dispatch) => {
   // Resolves to a action with type GET_USERS_REQUEST
   dispatch(getUsersRequest())
   return axios.get('/users')
-    // If successful dispatch GET_USERS_SUCCESS action and (optionally) normalise the data
-    .then(res => dispatch(getUsersSuccess(res, { schema: [ user ] })))
+    // If successful dispatch GET_USERS_SUCCESS action
+    .then(res => dispatch(getUsersSuccess(res)))
     // If failure dispatch GET_USERS_FAILURE action
     .catch(err => dispatch(getUsersFailure(err)))
 }
 ```
 
-All action creators optionally take an object which can be used to change the action.
+All action creators optionally take an object which can be used to modify the action.
 
-Valid parameters are:
+Valid keys in this object are:
  - `meta` add arbitrary data to a `meta` property in the action.
  - `schema` _(only SUCCESS / FAILURE)_ a [normalizr](https://github.com/paularmstrong/normalizr) schema to normalise the response.
 
-For example:
+###### Example usage setting `meta` and `schema`
 
 ```js
 import { schema } from 'normalizr'
@@ -59,7 +59,7 @@ export const getGists = () => dispatch => {
 }
 ```
 
-The actions would look similar to this
+The dispatched actions would look something like this
 
 ```js
 // getGistsRequest
@@ -78,10 +78,11 @@ The actions would look similar to this
     result: [15564, 27377, ...]
   },
   meta: {
-    responseAt: 1513176648004
+    responseAt: 1513176648004,
+    response: {...}
   },
-  response: {...}
 }
 ```
 
-The original, unmodified response is always available in the `response` key.
+The original unmodified response, if available, is always stored in `meta.response`.
+Request data, either raw or normalised, is always stored in `payload`.
