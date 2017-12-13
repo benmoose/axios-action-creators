@@ -1,9 +1,22 @@
 # Axios Action Creators
 
 [![npm version](https://img.shields.io/npm/v/axios-action-creators.svg?style=flat-square)](https://badge.fury.io/js/axios-action-creators)
+[![Build Status](https://travis-ci.org/benjaminhadfield/axios-action-creators.svg?branch=master)](https://travis-ci.org/benjaminhadfield/axios-action-creators)
 
 **Axios Action Creators** makes it really easy to deal with API responses.
 Simply define the action creators and then call them when you receive the response to get [standardised](https://github.com/acdlite/flux-standard-action) actions.
+
+## Installation
+
+Using npm
+```
+npm install axios-action-creators
+```
+
+...or using yarn
+```
+yarn add axios-action-creators
+```
 
 ## Usage
 
