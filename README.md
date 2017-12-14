@@ -25,7 +25,6 @@ yarn add axios-action-creators
 ```js
 import axios from 'axios'
 import { REQUEST, SUCCESS, FAILURE } from 'axios-action-creators'
-import { user } from './schema'
 
 // (1) Define action types
 export const GET_USERS_REQUEST = 'GET_USERS_REQUEST'
