@@ -1,6 +1,6 @@
 {
   "name": "axios-action-creators",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "A set of action creators that make it easier to work with axios and redux.",
   "main": "index.js",
   "repository": {
