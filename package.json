@@ -11,7 +11,11 @@
     "url": "https://github.com/benjaminhadfield/axios-action-creators/issues"
   },
   "scripts": {
-    "test": "jest"
+    "build": "babel src -d lib",
+    "pretest": "npm run build",
+    "test": "jest",
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "redux",
@@ -23,7 +27,12 @@
   "author": "Ben Hadfield <benjohnhadfield@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-jest": "^22.0.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
     "jest": "^21.2.1",
+    "normalizr": "^3.2.4",
     "standard": "^10.0.3"
   },
   "peerDependencies": {

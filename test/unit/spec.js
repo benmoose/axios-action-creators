@@ -1,16 +1,16 @@
 /* globals describe, test, expect */
 
-const axiosActionCreators = require('../../lib/axiosActionCreators')
-const normalizr = require('normalizr')
+import axiosActionCreators from '../../src/axiosActionCreators'
+import { schema, normalize } from 'normalizr'
 
 const ACTION_TYPE_FOO = 'ACTION_TYPE_FOO'
-const user = new normalizr.schema.Entity('users')
+const user = new schema.Entity('users')
 
 describe('Universal tests', () => {
   test('Request function exists', () => {
-    expect(axiosActionCreators.REQUEST).toBeInstanceOf(Function)
-    expect(axiosActionCreators.SUCCESS).toBeInstanceOf(Function)
-    expect(axiosActionCreators.FAILURE).toBeInstanceOf(Function)
+    expect(require('../../index').REQUEST).toBeInstanceOf(Function)
+    expect(require('../../index').SUCCESS).toBeInstanceOf(Function)
+    expect(require('../../index').FAILURE).toBeInstanceOf(Function)
   })
 
   test('Function is returned when only passed type', () => {
@@ -132,7 +132,7 @@ describe('SUCCESS', () => {
 
   test('Action payload contains normalized response when schema given', () => {
     const schema = [ user ]
-    const normalized = normalizr.normalize(data, schema)
+    const normalized = normalize(data, schema)
     const response = { data, status: 200, headers: {} }
     const expected = { type: ACTION_TYPE_FOO, payload: normalized, meta: { response } }
     expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
@@ -146,7 +146,7 @@ describe('SUCCESS', () => {
 
   test('Action payload contains normalized response when valid but nonsensical schema given', () => {
     const schema = {}
-    const normalized = normalizr.normalize(data, schema)
+    const normalized = normalize(data, schema)
     const response = { data, status: 200, headers: {} }
     const expected = { type: ACTION_TYPE_FOO, payload: normalized, meta: { response } }
     expect(SUCCESS(ACTION_TYPE_FOO)(response, { schema })).toEqual(expected)
